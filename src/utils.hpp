@@ -237,11 +237,26 @@ Gen gen;
             if (cur.back() != '"')
                 newalias(false);
         }
-        void end()
-        {
-            cur += '"';
-            gen->append(cur);
-        }
+  void end()
+  {
+      if (!cur.empty() && cur.back() == '"')
+          cur.pop_back();
+      size_t pos = cur.find('"');
+      if (pos != string::npos)
+      {
+          string prefix = cur.substr(0, pos + 1);
+          string content = cur.substr(pos + 1);
+          string extra = "alias sq_sf Sma_Seq_1;";
+          cur = prefix + extra + content + "\"";
+      }
+      else
+      {
+          cur += "alias sq_sf Sma_Seq_1;\"";
+      }
+
+      gen->append(cur);
+  }
+
     } aliaschain;
 
 public:
