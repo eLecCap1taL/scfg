@@ -1,7 +1,42 @@
 #ifndef SCFG_UTILS
 #define SCFG_UTILS
 
-#include <bits/stdc++.h>
+//#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <map>
+#include <set>
+#include <unordered_map>
+#include <unordered_set>
+#include <algorithm>
+#include <functional>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <filesystem>
+#include <regex>
+#include <cmath>
+#include <format>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <map>
+#include <set>
+#include <unordered_map>
+#include <unordered_set>
+#include <algorithm>
+#include <functional>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <filesystem>
+#include <regex>
+#include <cmath>
+#include <format>
 #include <lua.hpp>
 using namespace std;
 namespace fs = filesystem;
@@ -33,7 +68,7 @@ const size_t LENLIMIT = 128;
 const size_t LINELIMIT = 300;
 const double max_yaw_speed = 300;
 const double max_pitch_speed = 45;
-const string ticker = "hzSche_t";
+const string ticker = "sq_sf";
 
 lua_State* luaL;
 
@@ -62,6 +97,9 @@ size_t getListLen(const vector<string> &ls)
     return ret;
 }
 
+
+
+
 // 事件列表
 class eventList
 {
@@ -70,63 +108,82 @@ class eventList
     fs::path execpath;
     bool execpath_set;
 
-    class Gen
-    {
-        int N;
-        int linecnt = 0;
-        ofstream fout;
-        fs::path root, exec;
-        void newpage()
-        {
-            N++;
-            linecnt = 0;
-            string nxtpage = format("cmd_{}.cfg", N);
-            if (N > 1)
-                fout << format("exec {}", (exec / nxtpage).string());
-            fout = ofstream((root / nxtpage).string(), ios::out);
-        }
-        void remove_cmd_files(const fs::path &root)
-        {
-            if (!fs::exists(root) || !fs::is_directory(root))
-                return;
+ class Gen
+ {
+     int N;
+     int linecnt = 0;
+     ofstream fout;
+     fs::path root, exec;
+     vector<string> cmd_files;
 
-            std::regex pattern(R"(cmd_\d+\.cfg)");
+     void newpage()
+     {
+         if (fout.is_open())
+             fout.close();
 
-            for (const auto &entry : fs::directory_iterator(root))
-            {
-                if (fs::is_regular_file(entry.status()))
-                {
-                    const std::string filename = entry.path().filename().string();
-                    if (std::regex_match(filename, pattern))
-                    {
-                        fs::remove(entry.path());
-                    }
-                }
-            }
-        }
+         N++;
+         linecnt = 0;
+         string nxtpage = format("cmd_{}.cfg", N);
+         cmd_files.push_back(nxtpage);  // 记录文件名
+         fout = ofstream((root / nxtpage).string(), ios::out);
+     }
 
-    public:
-        void init(fs::path workspace, fs::path execpath)
-        {
-            root = workspace;
-            exec = execpath;
-            remove_cmd_files(root);
-            fs::create_directories(root);
-            log("workspace: " + root.string());
-            N = 0;
-            newpage();
-        }
-        void append(const string &s)
-        {
-            linecnt++;
-            fout << s << endl;
-            if (linecnt >= LINELIMIT)
-                newpage();
-        }
-    } gen;
+     void remove_cmd_files(const fs::path &root)
+     {
+         if (!fs::exists(root) || !fs::is_directory(root))
+             return;
+
+         std::regex pattern(R"(cmd_\d+\.cfg)");
+
+         for (const auto &entry : fs::directory_iterator(root))
+         {
+             if (fs::is_regular_file(entry.status()))
+             {
+                 const std::string filename = entry.path().filename().string();
+                 if (std::regex_match(filename, pattern))
+                 {
+                     fs::remove(entry.path());
+                 }
+             }
+         }
+     }
+
+ public:
+     void init(fs::path workspace, fs::path execpath)
+     {
+         root = workspace;
+         exec = execpath;
+         cmd_files.clear();
+         remove_cmd_files(root);
+         fs::create_directories(root);
+         log("workspace: " + root.string());
+         N = 0;
+         newpage();
+     }
+
+     void append(const string &s)
+     {
+         linecnt++;
+         fout << s << endl;
+         if (linecnt >= LINELIMIT)
+             newpage();
+     }
+
+     void write_init_file()
+     {
+         ofstream fout(root / "_init_.cfg");
+         fout << "alias sq_smartactive" << endl;
+         for (const auto &file : cmd_files)
+         {
+             fout << format("exec {}/{}", exec.string(), file) << endl;
+         }
+         fout << "alias sq_sf Sma_Seq_1" << endl;
+     }
+ };
+Gen gen;
     class AliasChain
     {
-        const string seq_pre = "hzSche_seq_";
+        const string seq_pre = "Sma_Seq_";
         string cur;
         int idN;
         Gen *gen;
@@ -215,12 +272,12 @@ public:
         if (!execpath_set)
             lua_warning(L, "exec path has not been set! Are you sure?", 0);
         gen.init(workspace, execpath);
-        const string pkg_pre = "hzSche_pkg_";
+        const string pkg_pre = "Sma_pkg_";
         int idN = 0;
 
         //add hz_stop
-        if(ls.empty()) ls[0].push_back("hzSche_stop_t");
-        else    ls[ls.rbegin()->first + 1].push_back("hzSche_stop_t");
+        if(ls.empty()) ls[0].push_back("smartactive_stop");
+        else    ls[ls.rbegin()->first + 1].push_back("smartactive_stop");
         // split command blocks into ids
         for (auto &[t, cmdls] : ls)
         {
@@ -262,6 +319,8 @@ public:
             }
         }
         aliaschain.end();
+        gen.write_init_file();
+
     }
 } event;
 
