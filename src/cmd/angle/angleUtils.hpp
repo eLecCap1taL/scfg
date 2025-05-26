@@ -19,6 +19,7 @@ namespace ANGLE
     else{
         event.pushEvent("hzCVAR_sens");
         }
+        }
 
     void resetAngle()
     {
