@@ -14,8 +14,9 @@ namespace ANGLE
      void useUserSensitivity()
     {
     if (lcfg_mode == 1)
-        event.pushEvent("rec_sensitivity");
-    else
+    {
+        event.pushEvent("rec_sensitivity");}
+    else{
         event.pushEvent("hzCVAR_sens");
         }
 
