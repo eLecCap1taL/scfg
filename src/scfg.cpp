@@ -20,7 +20,8 @@ void registerLuaFunctions(lua_State *L)
     registerLuaBaseFunctions(L);
     registerLuaSleepFunction(L);
     registerLuaSrcFunction(L);
-    registerLuaSetExecPathFunction(L);
+    registerLuaSetExecPathFunct
+    ion(L);
     registerLuaJumpFunction(L);
     registerLuaJumpbugFunction(L);
     registerLuaAngleFunction(L);
