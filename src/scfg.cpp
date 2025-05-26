@@ -10,6 +10,7 @@
 #include "cmd/misc/miscCommand.hpp"
 #include "utils.hpp"
 #include "include/Global.h"
+#include "include/LCFGFlagDevices.h"
 
 int lcfg_mode = 0;
 bool smart_convert=true;
@@ -114,6 +115,11 @@ log("scfg is running. mode = " + std::to_string(lcfg_mode));
     }
 
     log(format("ok process scfg file. end with current tick={}.", event.time()));
+    if(lcfg_mode==1)
+    {
+markLCFGHasRun();  //注册表标记设备
+    }
+
     event.generate(fs::current_path() / fs::path(scriptPath).stem(), L);
     lua_close(L);
     return 0;

@@ -270,8 +270,17 @@ void setExecPath(const string &s)
         int idN = 0;
 
         //add hz_stop
-        if(ls.empty()) ls[0].push_back("hzSche_stop_t");
-        else    ls[ls.rbegin()->first + 1].push_back("hzSche_stop_t");
+        if(lcfg_mode==1)
+        {
+          if(ls.empty()) ls[0].push_back("smartactive_stop");
+                else    ls[ls.rbegin()->first + 1].push_back("smartactive_stop");
+        }
+        else
+        {
+          if(ls.empty()) ls[0].push_back("hzSche_stop_t");
+                else    ls[ls.rbegin()->first + 1].push_back("hzSche_stop_t");
+        }
+
         // split command blocks into ids
         for (auto &[t, cmdls] : ls)
         {
