@@ -1,22 +1,5 @@
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <vector>
-#include <map>
-#include <set>
-#include <unordered_map>
-#include <unordered_set>
-#include <algorithm>
-#include <functional>
-#include <chrono>
-#include <ctime>
-#include <iomanip>
-#include <filesystem>
-#include <regex>
-#include <cmath>
-#include <format>
+#include <bits/stdc++.h>
 
 namespace SCFG
 {

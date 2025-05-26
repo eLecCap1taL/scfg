@@ -13,7 +13,7 @@ namespace ANGLE
     }
     void useUserSensitivity()
     {
-        event.pushEvent("rec_sensitivity");
+        event.pushEvent("hzCVAR_sens");
     }
     void resetAngle()
     {
