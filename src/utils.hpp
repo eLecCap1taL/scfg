@@ -237,7 +237,7 @@ void setExecPath(const string &s)
         cerr << "[SmartMode] exec path modified:\n";
         cerr << "  From: " << s << "\n";
         cerr << "  To  : " << new_s << "\n";
-        cerr<<"run scfg with argv -unsmart to disable executepath replace"
+        cerr<<"run scfg with argv -unsmart to disable executepath replace\n";
     }
 
     execpath_set = 1;

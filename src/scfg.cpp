@@ -12,7 +12,7 @@
 #include "include/Global.h"
 
 int lcfg_mode = 0;
-bool smart_convert=true
+bool smart_convert=true;
 
 void registerLuaFunctions(lua_State *L)
 {

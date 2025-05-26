@@ -2,6 +2,6 @@
 #include <string>
 
 extern int lcfg_mode;
-extern bool smart_convert = true;
+extern bool smart_convert;
 inline std::string ticker = "hzSche_t";
 inline std::string seq_pre = "hzSche_seq_";
