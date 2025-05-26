@@ -11,10 +11,14 @@ namespace ANGLE
         event.pushEvent("m_yaw 0.022");
         event.pushEvent("m_pitch 0.022");
     }
-    void useUserSensitivity()
+     void useUserSensitivity()
     {
+    if (lcfg_mode == 1)
+        event.pushEvent("rec_sensitivity");
+    else
         event.pushEvent("hzCVAR_sens");
-    }
+        }
+
     void resetAngle()
     {
         event.pushEvent("yaw 99999999999999999 1 1");

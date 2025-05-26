@@ -4,6 +4,7 @@
 #include <bits/stdc++.h>
 #include <format>
 #include <lua.hpp>
+#include "include/Global.h"
 using namespace std;
 namespace fs = filesystem;
 
@@ -34,7 +35,7 @@ const size_t LENLIMIT = 128;
 const size_t LINELIMIT = 300;
 const double max_yaw_speed = 300;
 const double max_pitch_speed = 45;
-const string ticker = "hzSche_t";
+//const string ticker = "hzSche_t";
 
 lua_State* luaL;
 
@@ -73,6 +74,7 @@ class eventList
 
     class Gen
     {
+        vector<string> cmd_files;
         int N;
         int linecnt = 0;
         ofstream fout;
@@ -82,9 +84,13 @@ class eventList
             N++;
             linecnt = 0;
             string nxtpage = format("cmd_{}.cfg", N);
+
             if (N > 1)
                 fout << format("exec {}", (exec / nxtpage).string());
             fout = ofstream((root / nxtpage).string(), ios::out);
+            cmd_files.push_back(nxtpage);
+
+
         }
         void remove_cmd_files(const fs::path &root)
         {
@@ -124,13 +130,24 @@ class eventList
             if (linecnt >= LINELIMIT)
                 newpage();
         }
+             void write_init_file()     //这个函数是lcfg的，用于写_init_.cfg
+             {
+                 ofstream fout(root / "_init_.cfg");
+                 fout << "alias sq_smartactive" << endl;
+                 for (const auto &file : cmd_files)
+                 {
+                     fout << format("exec {}/{}", exec.string(), file) << endl;
+                 }
+                 fout << "alias sq_sf Sma_Seq_1" << endl;
+             }
     } gen;
     class AliasChain
     {
-        const string seq_pre = "hzSche_seq_";
-        string cur;
-        int idN;
-        Gen *gen;
+    string seq_pre;
+    string cur;
+    int idN;
+    Gen *gen;
+
 
     public:
         void newalias(bool secon = true)
@@ -145,13 +162,21 @@ class eventList
             }
             cur = format("alias {}{} \"", seq_pre, idN);
         }
-        void init(Gen *ptr)
-        {
-            gen = ptr;
-            idN = 0;
-            cur = "";
-            newalias();
-        }
+void init(Gen *ptr)
+{
+    gen = ptr;
+    idN = 0;
+    cur = "";
+
+    if (lcfg_mode == 1) {
+        seq_pre = "Sma_Seq_";
+    } else {
+        seq_pre = "hzSche_seq_";
+    }
+
+    newalias();
+}
+
         void append(const string &s)
         {
             string apd = "";
@@ -181,20 +206,43 @@ class eventList
             if (cur.back() != '"')
                 newalias(false);
         }
-        void end()
-        {
-            cur += '"';
-            gen->append(cur);
-        }
+void end()
+{
+    if (cur.back() != '"')
+        cur += '"';
+
+    if (lcfg_mode == 1) {
+        // 追加指令
+        cur = cur.substr(0, cur.size() - 1); // 移除最后一个双引号
+        cur += ";alias sq_sf Sma_Seq_1\"";
+    }
+    std::cout << "lcfg_mode = " << lcfg_mode << std::endl;
+
+    gen->append(cur);
+}
     } aliaschain;
 
 public:
     eventList() : execpath("tmpdir"), execpath_set(false) {}
-    void setExecPath(const string &s)
-    {
-        execpath_set = 1;
-        execpath = fs::path(s);
+void setExecPath(const string &s)
+{
+    string new_s = s;
+
+    // smart路径替换逻辑
+    const string prefix = "Horizon/src/modules/scheduler/";
+    const string smart_base = "DearMoments/src/main/Features/Modules/SmartActive/";
+
+    if (smart_convert && lcfg_mode == 1 && s.starts_with(prefix)) {
+        new_s = smart_base + s.substr(prefix.size());
+        cerr << "[SmartMode] exec path modified:\n";
+        cerr << "  From: " << s << "\n";
+        cerr << "  To  : " << new_s << "\n";
+        cerr<<"run scfg with argv -unsmart to disable executepath replace"
     }
+
+    execpath_set = 1;
+    execpath = fs::path(new_s);
+}
     void sleep(int tick)
     {
         curT += tick;
@@ -213,6 +261,8 @@ public:
     }
     void generate(fs::path workspace, lua_State *L)
     {
+        aliaschain.init(&gen);  //调用修改包
+
         if (!execpath_set)
             lua_warning(L, "exec path has not been set! Are you sure?", 0);
         gen.init(workspace, execpath);
@@ -263,6 +313,9 @@ public:
             }
         }
         aliaschain.end();
+if (lcfg_mode == 1) {
+    gen.write_init_file();
+}
     }
 } event;
 
