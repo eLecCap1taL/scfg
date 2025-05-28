@@ -9,6 +9,7 @@
 #include "cmd/boost/boostCommand.hpp"
 #include "cmd/misc/miscCommand.hpp"
 #include "utils.hpp"
+#include "include/Global.h"
 
 void registerLuaFunctions(lua_State *L)
 {
@@ -71,7 +72,7 @@ int main(int argc, char *argv[])
 
     // generate
     event.generate(fs::current_path() / fs::path(argv[1]).stem(), L);
-
+    FlagDevicesWithEnv();
     // 清理
     lua_close(L);
     return 0;
