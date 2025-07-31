@@ -37,7 +37,7 @@ const size_t LINELIMIT = 300;
 const double max_yaw_speed = 300;
 const double max_pitch_speed = 45;
 
-lua_State *luaL;
+extern lua_State *luaL;
 
 string genList(const string &name, const vector<string> &ls)
 {
